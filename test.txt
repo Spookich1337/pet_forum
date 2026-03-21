@@ -1,0 +1,17 @@
+форум
+
+сущности:
+    user:
+    user_id: int autokey
+    nickname: str
+    email: str
+    password: str
+    friends: list(user_id) как то еще добавить автолинк при добавлении в друзья
+    posts: list(post_id)
+
+    post:
+    post_id: int autokey
+    author_id: user id
+    title: str
+    text: str
+    

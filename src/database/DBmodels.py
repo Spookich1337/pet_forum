@@ -4,7 +4,9 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import ARRAY
 from typing import List
 
+
 Base = declarative_base()
+
 
 user_subscriptions = Table(
     "user_subscriptions",
@@ -12,6 +14,7 @@ user_subscriptions = Table(
     Column('subscriber_id', Integer, ForeignKey('users.id'), primary_key=True),
     Column('subscribed_to_id', Integer, ForeignKey('users.id'), primary_key=True)
 )
+
 
 class User(Base):
     __tablename__ = "users"
@@ -40,12 +43,13 @@ class User(Base):
         cascade="all, delete-orphan"
         )
 
+
 class Post(Base):
     __tablename__ = "posts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     author_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    title: Mapped[str] = mapped_column(String(64))
+    title: Mapped[str] = mapped_column(String(64), unique=True)
     text: Mapped[str] = mapped_column(String(300), nullable=True)
     rating_up: Mapped[list[int]] = mapped_column(ARRAY(Integer, dimensions=1), default=list)
     rating_down: Mapped[list[int]] = mapped_column(ARRAY(Integer, dimensions=1), default=list)

@@ -1,11 +1,22 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 from src.database.DBconfig import engine, get_db 
 from src.database.DBmodels import *
-from sqlalchemy.orm import Session
 from src.schemas.schem import *
 
 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 Base.metadata.create_all(bind=engine)
@@ -13,7 +24,7 @@ Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def root():
-    return {"test":"connect"}
+    return FileResponse("src/template/index.html")
 
 
 @app.get("/user/{id}", response_model=UserResponse)
@@ -91,6 +102,20 @@ def delete_user(id:int, db:Session = Depends(get_db)):
         ) 
     return None   
 
+
+@app.get("/posts", response_model=PostList)
+def get_all_posts(db:Session = Depends(get_db)):
+    posts = db.query(Post).all()
+    if not posts:
+        raise HTTPException(
+            detail="Not found any available posts", 
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+    count = db.query(Post).count()
+    return {
+        "count":count,
+        "posts":posts
+        }
 
 @app.get("/post/{id}", response_model=PostResponse)
 def get_post(id:int, db:Session = Depends(get_db)):

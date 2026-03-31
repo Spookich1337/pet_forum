@@ -30,6 +30,11 @@ class PostResponse(BaseModel):
     rating_down: list[int]
 
 
+class PostList(BaseModel):
+    count : int
+    posts : list[PostResponse]
+
+
 class PostCreate(BaseModel):
     author_id: int
     title: str

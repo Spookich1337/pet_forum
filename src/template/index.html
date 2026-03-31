@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Форум</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <div class="max-w-4xl mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-8 text-blue-600">Простой Форум</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">Регистрация пользователя</h2>
+                <form id="userForm" class="space-y-4">
+                    <input type="text" id="userName" placeholder="Имя" class="w-full p-2 border rounded" required>
+                    <input type="email" id="userEmail" placeholder="Email" class="w-full p-2 border rounded" required>
+                    <input type="password" id="userPassword" placeholder="Пароль" class="w-full p-2 border rounded" required>
+                    <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Создать аккаунт</button>
+                </form>
+                <div id="userResult" class="mt-2 text-sm text-green-600"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">Написать пост</h2>
+                <form id="postForm" class="space-y-4">
+                    <input type="number" id="postAuthorId" placeholder="ID автора (из регистрации)" class="w-full p-2 border rounded" required>
+                    <input type="text" id="postTitle" placeholder="Заголовок поста" class="w-full p-2 border rounded" required>
+                    <textarea id="postText" placeholder="Текст поста..." class="w-full p-2 border rounded" rows="3" required></textarea>
+                    <button type="submit" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Опубликовать</button>
+                </form>
+                <div id="postResult" class="mt-2 text-sm text-green-600"></div>
+            </div>
+        </div>
+
+        <div class="mt-10">
+            <h2 id="postsHeader" class="text-2xl font-bold mb-4">Лента постов</h2>
+            <button onclick="loadPosts()" class="mb-4 bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Обновить ленту</button>
+            <div id="postsContainer" class="space-y-4">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // Укажи здесь адрес твоего FastAPI сервера
+        const API_URL = 'http://127.0.0.1:8080';
+
+        // 1. Создание пользователя
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                password: document.getElementById('userPassword').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/user`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('userResult').innerText = `Пользователь создан! Твой ID: ${result.id}`;
+                } else {
+                    document.getElementById('userResult').innerText = `Ошибка: ${result.detail}`;
+                    document.getElementById('userResult').className = "mt-2 text-sm text-red-600";
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // 2. Создание поста
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                author_id: parseInt(document.getElementById('postAuthorId').value),
+                title: document.getElementById('postTitle').value,
+                text: document.getElementById('postText').value,
+                rating_up: [],
+                rating_down: []
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/post`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('postResult').innerText = 'Пост успешно опубликован!';
+                    loadPosts(); // Обновляем ленту после создания
+                } else {
+                    document.getElementById('postResult').innerText = `Ошибка: ${result.detail}`;
+                    document.getElementById('postResult').className = "mt-2 text-sm text-red-600";
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // 3. Загрузка всех постов (нужен эндпоинт GET /posts)
+        async function loadPosts() {
+            const container = document.getElementById('postsContainer');
+            container.innerHTML = 'Загрузка...';
+
+            try {
+                const response = await fetch(`${API_URL}/posts`);
+                
+                // Обрабатываем 404 ошибку (когда постов нет, как ты прописал в FastAPI)
+                if (response.status === 404) {
+                    container.innerHTML = '<p class="text-gray-500">Постов пока нет.</p>';
+                    // Обновляем заголовок, чтобы показать 0 постов
+                    document.getElementById('postsHeader').innerText = `Лента постов (0)`;
+                    return;
+                }
+                
+                if (!response.ok) throw new Error('Ошибка при загрузке постов');
+                
+                // Теперь мы получаем объект data, внутри которого есть count и posts
+                const data = await response.json();
+                const postsArray = data.posts;
+                const postsCount = data.count;
+
+                container.innerHTML = '';
+                
+                // Выводим количество постов в заголовок (для красоты)
+                document.getElementById('postsHeader').innerText = `Лента постов (${postsCount})`;
+
+                postsArray.forEach(post => {
+                    const postDiv = document.createElement('div');
+                    postDiv.className = 'bg-white p-4 rounded-lg shadow border-l-4 border-blue-500';
+                    postDiv.innerHTML = `
+                        <h3 class="font-bold text-lg">${post.title}</h3>
+                        <p class="text-gray-600 mt-2">${post.text}</p>
+                        <div class="mt-4 text-xs text-gray-400">
+                            Автор ID: ${post.author_id} | 
+                            👍 ${post.rating_up ? post.rating_up.length : 0} | 
+                            👎 ${post.rating_down ? post.rating_down.length : 0}
+                        </div>
+                    `;
+                    container.appendChild(postDiv);
+                });
+            } catch (err) {
+                container.innerHTML = `<p class="text-red-500">Не удалось загрузить ленту.</p>`;
+                console.error(err);
+            }
+        }
+
+        // Загрузить посты при открытии страницы
+        loadPosts();
+    </script>
+</body>
+</html>

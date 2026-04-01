@@ -32,17 +32,6 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
-async def commit_db(db: AsyncSession):
-    try:
-        await db.commit()
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(
-            detail=f"Something goes wrong:{e}",
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        ) 
-
-
 @app.get("/")
 async def root():
     return {"test1":"connect"}
@@ -71,8 +60,15 @@ async def post_user(data:UserCreate, db:AsyncSession = Depends(get_db)):
         )
     new_user = User(**data.model_dump())
     db.add(new_user)
-    await commit_db(db)
-    await db.refresh(new_user)
+    try:
+        await db.commit()
+        await db.refresh(new_user)
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            detail=f"Something goes wrong:{e}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        ) 
     return new_user
 
 
@@ -88,8 +84,15 @@ async def put_user(id:int, data:UserUpdate, db:AsyncSession = Depends(get_db)):
     update_data = data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(exist_user, key, value)
-    await commit_db(db)
-    await db.refresh(exist_user)
+    try:
+        await db.commit()
+        await db.refresh(exist_user)
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            detail=f"Something goes wrong:{e}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        ) 
     return exist_user
 
 
@@ -103,7 +106,14 @@ async def delete_user(id:int, db:AsyncSession = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND
         )
     await db.delete(exist_user)
-    await commit_db(db)
+    try:
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            detail=f"Something goes wrong:{e}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        ) 
     return None   
 
 
@@ -146,14 +156,22 @@ async def post_post(data:PostCreate, db:AsyncSession = Depends(get_db)):
         )
     new_post = Post(**data.model_dump())
     db.add(new_post)
-    await commit_db(db)
-    db.refresh(new_post)
+    try:
+        await db.commit()
+        await db.refresh(new_post)
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            detail=f"Something goes wrong:{e}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        ) 
     return new_post
 
 
 @app.put("/post/{id}", response_model=PostResponse)
-def put_post(id:int, data:PostUpdate, db:AsyncSession = Depends(get_db)):
-    exist_post = db.query(Post).filter(Post.id == id).first()
+async def put_post(id:int, data:PostUpdate, db:AsyncSession = Depends(get_db)):
+    exist_post_query = await db.execute(select(Post).where(Post.id == id))
+    exist_post = exist_post_query.scalars().first()
     if not exist_post:
         raise HTTPException(
             detail="Not found post with this ID", 
@@ -163,10 +181,10 @@ def put_post(id:int, data:PostUpdate, db:AsyncSession = Depends(get_db)):
     for key, value in update_data.items():
         setattr(exist_post, key, value)
     try:
-        db.commit()
-        db.refresh(exist_post)
+        await db.commit()
+        await db.refresh(exist_post)
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(
             detail=f"Something goes wrong:{e}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -175,18 +193,19 @@ def put_post(id:int, data:PostUpdate, db:AsyncSession = Depends(get_db)):
 
 
 @app.delete("/post/{id}")
-def delete_post(id:int, db:AsyncSession = Depends(get_db)):
-    exist_post = db.query(Post).filter(Post.id == id).first()
+async def delete_post(id:int, db:AsyncSession = Depends(get_db)):
+    exist_post_query = await db.execute(select(Post).where(Post.id == id))
+    exist_post = exist_post_query.scalars().first()
     if not exist_post:
         raise HTTPException(
             detail="Not found post with this ID", 
             status_code=status.HTTP_404_NOT_FOUND
         )
-    db.delete(exist_post)
+    await db.delete(exist_post)
     try:
-        db.commit()
+        await db.commit()
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(
             detail=f"Something goes wrong:{e}",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR

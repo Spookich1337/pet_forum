@@ -298,3 +298,100 @@ async def delete_post(id:int, db:AsyncSession = Depends(get_db)):
     return None
 
 
+@app.post("/post/rating/up/{post_id}/{user_id}", response_model=PostResponse)
+async def post_rating_up(post_id: int, user_id: int, db: AsyncSession = Depends(get_db)):
+    post_query = await db.execute(select(Post).where(Post.id == post_id))
+    post = post_query.scalars().first()    
+    if not post:
+        raise HTTPException(
+            detail="Not found post with this ID", 
+            status_code=status.HTTP_404_NOT_FOUND
+        )   
+    rating_up = list(post.rating_up) if post.rating_up else []
+    rating_down = list(post.rating_down) if post.rating_down else []
+    if user_id in rating_up:
+        raise HTTPException(
+            detail="Post already rated up", 
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+    if user_id in rating_down:
+        rating_down.remove(user_id)
+    rating_up.append(user_id)
+    post.rating_up = rating_up
+    post.rating_down = rating_down   
+    try:
+        await db.commit()
+        await db.refresh(post)
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            detail=f"Something goes wrong: {e}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        ) 
+    return post
+
+
+@app.post("/post/rating/down/{post_id}/{user_id}", response_model=PostResponse)
+async def post_rating_down(post_id: int, user_id: int, db: AsyncSession = Depends(get_db)):
+    post_query = await db.execute(select(Post).where(Post.id == post_id))
+    post = post_query.scalars().first()    
+    if not post:
+        raise HTTPException(
+            detail="Not found post with this ID", 
+            status_code=status.HTTP_404_NOT_FOUND
+        )   
+    rating_up = list(post.rating_up) if post.rating_up else []
+    rating_down = list(post.rating_down) if post.rating_down else []
+    if user_id in rating_down:
+        raise HTTPException(
+            detail="Post already rated down", 
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+    if user_id in rating_up:
+        rating_up.remove(user_id)
+    rating_down.append(user_id)    
+    post.rating_up = rating_up
+    post.rating_down = rating_down   
+    try:
+        await db.commit()
+        await db.refresh(post)
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            detail=f"Something goes wrong: {e}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        ) 
+    return post
+
+
+@app.delete("/post/rating/{post_id}/{user_id}")
+async def delete_rating(post_id:int, user_id:int, db:AsyncSession = Depends(get_db)):
+    post_query = await db.execute(select(Post).where(Post.id == post_id))
+    post = post_query.scalars().first()
+    if not post:
+        raise HTTPException(
+            detail="Not found post with this ID", 
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+    rating_up = list(post.rating_up) if post.rating_up else []
+    rating_down = list(post.rating_down) if post.rating_down else []
+    if user_id not in rating_up and user_id not in rating_down:
+        raise HTTPException(
+            detail="Bad request, user not rated this post", 
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+    if user_id in rating_up:
+        rating_up.remove(user_id)
+    if user_id in rating_down:
+        rating_down.remove(user_id)
+    post.rating_up = rating_up
+    post.rating_down = rating_down
+    try:
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            detail=f"Something goes wrong:{e}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        ) 
+    return None

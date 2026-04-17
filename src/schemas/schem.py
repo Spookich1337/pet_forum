@@ -7,18 +7,30 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserSub(BaseModel):
+    id: int
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserShortResponse(BaseModel):
     id: int
     name: str
+    subscriptions: list[UserSub]
+    subscribers: list[UserSub]
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserResponse(BaseModel):
     id: int
     name: str
     email: str
-    password: str
-    subscriptions: list[UserShortResponse]
-    subscribers: list[UserShortResponse]
+    subscriptions: list[UserSub]
+    subscribers: list[UserSub]
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserCreate(BaseModel):
@@ -31,6 +43,11 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
     password: Optional[str] = None
+
+
+class UserList(BaseModel):
+    count : int
+    users : list[UserShortResponse]
 
 
 class PostResponse(BaseModel):
@@ -48,14 +65,10 @@ class PostList(BaseModel):
 
 
 class PostCreate(BaseModel):
-    author_id: int
     title: str
     text: str
 
 
 class PostUpdate(BaseModel):
-    author_id: Optional[int]= None
     title: Optional[str] = None
     text: Optional[str] = None
-    rating_up: Optional[list[int]] = None
-    rating_down: Optional[list[int]] = None

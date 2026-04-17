@@ -3,292 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мой Форум</title>
+    <title>Блог-Платформа</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
 
-    <nav class="bg-blue-600 text-white p-4 shadow-md">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold cursor-pointer" onclick="showPage('feed')">Блог-Платформа</h1>
-            <div id="navMenu">
-                </div>
+<nav class="bg-blue-600 text-white p-4 shadow-md">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+        <h1 class="text-2xl font-bold cursor-pointer" onclick="showPage('feed')">Блог-Платформа</h1>
+        <div id="navMenu"></div>
+    </div>
+</nav>
+
+<div class="max-w-4xl mx-auto p-4 mt-6">
+
+    <!-- АВТОРИЗАЦИЯ -->
+    <div id="page-auth" class="hidden max-w-md mx-auto space-y-8">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Вход</h2>
+            <form id="loginForm" class="space-y-4">
+                <input type="email" id="loginEmail" placeholder="Email" class="w-full p-2 border rounded" required>
+                <input type="password" id="loginPassword" placeholder="Пароль" class="w-full p-2 border rounded" required>
+                <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Войти</button>
+            </form>
+            <div id="loginResult" class="mt-2 text-sm text-red-600"></div>
         </div>
-    </nav>
-
-    <div class="max-w-4xl mx-auto p-4 mt-6">
-
-        <div id="page-auth" class="hidden max-w-md mx-auto space-y-8">
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-xl font-bold mb-4">Вход</h2>
-                <form id="loginForm" class="space-y-4">
-                    <input type="email" id="loginEmail" placeholder="Email" class="w-full p-2 border rounded" required>
-                    <input type="password" id="loginPassword" placeholder="Пароль" class="w-full p-2 border rounded" required>
-                    <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Войти</button>
-                </form>
-                <div id="loginResult" class="mt-2 text-sm text-red-600"></div>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-xl font-bold mb-4">Регистрация</h2>
-                <form id="registerForm" class="space-y-4">
-                    <input type="text" id="regName" placeholder="Имя" class="w-full p-2 border rounded" required>
-                    <input type="email" id="regEmail" placeholder="Email" class="w-full p-2 border rounded" required>
-                    <input type="password" id="regPassword" placeholder="Пароль" class="w-full p-2 border rounded" required>
-                    <button type="submit" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Зарегистрироваться</button>
-                </form>
-                <div id="regResult" class="mt-2 text-sm text-red-600"></div>
-            </div>
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Регистрация</h2>
+            <form id="registerForm" class="space-y-4">
+                <input type="text" id="regName" placeholder="Имя" class="w-full p-2 border rounded" required>
+                <input type="email" id="regEmail" placeholder="Email" class="w-full p-2 border rounded" required>
+                <input type="password" id="regPassword" placeholder="Пароль" class="w-full p-2 border rounded" required>
+                <button type="submit" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Зарегистрироваться</button>
+            </form>
+            <div id="regResult" class="mt-2 text-sm text-red-600"></div>
         </div>
-
-        <div id="page-feed" class="hidden space-y-6">
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-xl font-bold mb-4">Написать пост</h2>
-                <form id="postForm" class="space-y-4">
-                    <input type="text" id="postTitle" placeholder="Заголовок поста" class="w-full p-2 border rounded font-bold" required>
-                    <textarea id="postText" placeholder="Что у вас нового?" class="w-full p-2 border rounded" rows="3" required></textarea>
-                    <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Опубликовать</button>
-                </form>
-                <div id="postResult" class="mt-2 text-sm text-green-600"></div>
-            </div>
-
-            <div class="flex justify-between items-center">
-                <h2 id="feedTitle" class="text-2xl font-bold">Все посты</h2>
-                <div class="space-x-2">
-                    <button onclick="loadPosts('all')" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Все</button>
-                    <button onclick="loadPosts('recom')" class="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500">Рекомендации</button>
-                </div>
-            </div>
-            
-            <div id="postsContainer" class="space-y-4"></div>
-        </div>
-
     </div>
 
-    <script>
-        const API_URL = 'http://127.0.0.1:8080';
-        let currentUser = JSON.parse(localStorage.getItem('user'));
+    <!-- ЛЕНТА -->
+    <div id="page-feed" class="hidden space-y-6">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Написать пост</h2>
+            <form id="postForm" class="space-y-4">
+                <input type="text" id="postTitle" placeholder="Заголовок" class="w-full p-2 border rounded" required>
+                <textarea id="postText" placeholder="Текст поста" class="w-full p-2 border rounded" rows="3" required></textarea>
+                <input type="hidden" id="editPostId">
+                <div class="flex space-x-2">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Опубликовать</button>
+                    <button type="button" id="cancelEditBtn" class="hidden bg-gray-300 px-4 py-2 rounded hover:bg-gray-400" onclick="cancelEdit()">Отмена</button>
+                </div>
+            </form>
+        </div>
 
-        // Инициализация
-        function init() {
-            updateNav();
-            if (currentUser) {
+        <div class="flex justify-between items-center">
+            <h2 id="feedTitle" class="text-2xl font-bold">Все посты</h2>
+            <div class="space-x-2">
+                <button onclick="loadPosts('all')" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Все</button>
+                <button onclick="loadPosts('recom')" class="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500">Рекомендации</button>
+            </div>
+        </div>
+        <div id="postsContainer" class="space-y-4"></div>
+    </div>
+
+    <!-- ПРОФИЛЬ -->
+    <div id="page-profile" class="hidden max-w-2xl mx-auto space-y-6">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold mb-4">Мой профиль</h2>
+            <form id="profileForm" class="space-y-4">
+                <input type="text" id="profileName" placeholder="Имя" class="w-full p-2 border rounded">
+                <input type="email" id="profileEmail" placeholder="Email" class="w-full p-2 border rounded">
+                <input type="password" id="profilePassword" placeholder="Новый пароль (если нужно)" class="w-full p-2 border rounded">
+                <div class="flex space-x-2">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Сохранить</button>
+                    <button type="button" onclick="deleteProfile()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Удалить аккаунт</button>
+                </div>
+            </form>
+            <div id="profileResult" class="mt-2 text-sm"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://127.0.0.1:8080';
+    let accessToken = localStorage.getItem('accessToken');
+    let currentUserId = localStorage.getItem('userId');
+    let currentUserData = null;
+
+    // ----- НАВИГАЦИЯ И ИНИЦИАЛИЗАЦИЯ -----
+    function init() {
+        updateNav();
+        if (accessToken) {
+            fetchCurrentUser().then(() => {
                 showPage('feed');
                 loadPosts('all');
-            } else {
-                showPage('auth');
-            }
-        }
-
-        // Управление видимостью страниц
-        function showPage(pageId) {
-            document.getElementById('page-auth').classList.add('hidden');
-            document.getElementById('page-feed').classList.add('hidden');
-            document.getElementById(`page-${pageId}`).classList.remove('hidden');
-        }
-
-        // Обновление навигации в зависимости от статуса авторизации
-        function updateNav() {
-            const navMenu = document.getElementById('navMenu');
-            if (currentUser) {
-                navMenu.innerHTML = `
-                    <span class="mr-4">Привет, <b>${currentUser.name}</b>!</span>
-                    <button onclick="logout()" class="bg-red-500 px-3 py-1 rounded hover:bg-red-600">Выйти</button>
-                `;
-            } else {
-                navMenu.innerHTML = `<span class="italic">Не авторизован</span>`;
-            }
-        }
-
-        // Логин
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                email: document.getElementById('loginEmail').value,
-                password: document.getElementById('loginPassword').value
-            };
-            try {
-                const response = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if (response.ok) {
-                    currentUser = await response.json();
-                    localStorage.setItem('user', JSON.stringify(currentUser));
-                    init();
-                } else {
-                    const error = await response.json();
-                    document.getElementById('loginResult').innerText = error.detail;
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        });
-
-        // Регистрация
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                name: document.getElementById('regName').value,
-                email: document.getElementById('regEmail').value,
-                password: document.getElementById('regPassword').value
-            };
-            try {
-                const response = await fetch(`${API_URL}/user`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if (response.ok) {
-                    // Сразу логиним после успешной регистрации
-                    currentUser = await response.json();
-                    localStorage.setItem('user', JSON.stringify(currentUser));
-                    init();
-                } else {
-                    const error = await response.json();
-                    document.getElementById('regResult').innerText = error.detail;
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        });
-
-        // Выход
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('user');
-            init();
-        }
-
-        // Создание поста
-        document.getElementById('postForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                author_id: currentUser.id,
-                title: document.getElementById('postTitle').value,
-                text: document.getElementById('postText').value,
-                rating_up: [],
-                rating_down: []
-            };
-            try {
-                const response = await fetch(`${API_URL}/post`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if (response.ok) {
-                    document.getElementById('postTitle').value = '';
-                    document.getElementById('postText').value = '';
-                    loadPosts('all');
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        });
-
-        // Загрузка постов (все или рекомендации)
-        async function loadPosts(type) {
-            const container = document.getElementById('postsContainer');
-            const title = document.getElementById('feedTitle');
-            container.innerHTML = '<p class="text-gray-500">Загрузка...</p>';
-            
-            let url = `${API_URL}/posts`;
-            title.innerText = 'Все посты';
-
-            if (type === 'recom') {
-                url = `${API_URL}/post/rec/${currentUser.id}`;
-                title.innerText = 'Рекомендации';
-            }
-
-            try {
-                const response = await fetch(url);
-                if (response.status === 404) {
-                    container.innerHTML = '<p class="text-gray-500">Постов пока нет.</p>';
-                    return;
-                }
-                const data = await response.json();
-                renderPosts(data.posts);
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = `<p class="text-red-500">Ошибка загрузки ленты.</p>`;
-            }
-        }
-
-        // Отрисовка постов
-        function renderPosts(posts) {
-            const container = document.getElementById('postsContainer');
-            container.innerHTML = '';
-            
-            posts.forEach(post => {
-                // Проверяем, лайкал/дизлайкал ли текущий юзер этот пост
-                const upvotes = post.rating_up ? post.rating_up.length : 0;
-                const downvotes = post.rating_down ? post.rating_down.length : 0;
-                const isLiked = post.rating_up && post.rating_up.includes(currentUser.id);
-                const isDisliked = post.rating_down && post.rating_down.includes(currentUser.id);
-
-                const postDiv = document.createElement('div');
-                postDiv.className = 'bg-white p-5 rounded-lg shadow border-l-4 border-blue-500 relative';
-                postDiv.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-xl">${post.title}</h3>
-                            <p class="text-sm text-gray-500 mb-3">Автор ID: ${post.author_id}</p>
-                        </div>
-                        ${post.author_id !== currentUser.id ? 
-                          `<button onclick="subscribe(${post.author_id})" class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded hover:bg-blue-200">Подписаться</button>` 
-                          : ''}
-                    </div>
-                    <p class="text-gray-800">${post.text}</p>
-                    
-                    <div class="mt-4 flex items-center space-x-4 border-t pt-3">
-                        <button onclick="ratePost(${post.id}, 'up')" class="flex items-center space-x-1 ${isLiked ? 'text-green-600 font-bold' : 'text-gray-500 hover:text-green-500'}">
-                            <span>👍</span> <span>${upvotes}</span>
-                        </button>
-                        <button onclick="ratePost(${post.id}, 'down')" class="flex items-center space-x-1 ${isDisliked ? 'text-red-600 font-bold' : 'text-gray-500 hover:text-red-500'}">
-                            <span>👎</span> <span>${downvotes}</span>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(postDiv);
             });
+        } else {
+            showPage('auth');
         }
+    }
 
-        // Оценка поста
-        async function ratePost(postId, action) {
-            try {
-                // Пытаемся поставить лайк/дизлайк. В бэкенде у тебя /post/rating/up/{post_id}/{user_id}
-                const response = await fetch(`${API_URL}/post/rating/${action}/${postId}/${currentUser.id}`, {
-                    method: 'POST'
-                });
-                
-                // Если бэкенд возвращает 400 (уже лайкнул), логика твоего бэкенда не позволяет снять лайк этим же запросом
-                // Для упрощения фронтенда мы просто перезагружаем ленту, чтобы обновить цифры
-                loadPosts('all'); 
-            } catch (err) {
-                console.error(err);
+    function showPage(pageId) {
+        ['auth', 'feed', 'profile'].forEach(id => {
+            const el = document.getElementById(`page-${id}`);
+            if (el) el.classList.add('hidden');
+        });
+        document.getElementById(`page-${pageId}`).classList.remove('hidden');
+    }
+
+    function updateNav() {
+        const navMenu = document.getElementById('navMenu');
+        if (accessToken && currentUserData) {
+            navMenu.innerHTML = `
+                <span class="mr-4">Привет, <b>${currentUserData.name}</b>!</span>
+                <button onclick="showPage('profile')" class="bg-white text-blue-600 px-3 py-1 rounded hover:bg-gray-100 mr-2">Профиль</button>
+                <button onclick="logout()" class="bg-red-500 px-3 py-1 rounded hover:bg-red-600">Выйти</button>
+            `;
+        } else {
+            navMenu.innerHTML = `<span class="italic">Не авторизован</span>`;
+        }
+    }
+
+    async function fetchCurrentUser() {
+        if (!accessToken) return;
+        try {
+            const res = await fetch(`${API_URL}/users/${currentUserId}`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            if (res.ok) {
+                currentUserData = await res.json();
+                updateNav();
+                populateProfileForm();
+            } else if (res.status === 401) {
+                logout();
             }
+        } catch (e) {
+            console.error(e);
         }
+    }
 
-        // Подписка на автора
-        async function subscribe(authorId) {
-            try {
-                const response = await fetch(`${API_URL}/user/sub/${currentUser.id}/${authorId}`, {
-                    method: 'POST'
-                });
-                if (response.ok) {
-                    alert('Вы успешно подписались!');
-                } else {
-                    const err = await response.json();
-                    alert(err.detail); // Покажет "user already subscribed" если уже подписан
-                }
-            } catch (err) {
-                console.error(err);
+    // ----- АВТОРИЗАЦИЯ -----
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('username', document.getElementById('loginEmail').value);
+        formData.append('password', document.getElementById('loginPassword').value);
+        try {
+            const res = await fetch(`${API_URL}/authorization`, {
+                method: 'POST',
+                body: formData
+            });
+            if (res.ok) {
+                const data = await res.json();
+                accessToken = data.access_token;
+                // Получаем id из токена (второй способ – запросить /users/me, но у нас нет такого)
+                const payload = JSON.parse(atob(accessToken.split('.')[1]));
+                currentUserId = payload.sub;
+                localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('userId', currentUserId);
+                document.getElementById('loginResult').innerText = '';
+                init();
+            } else {
+                const err = await res.json();
+                document.getElementById('loginResult').innerText = err.detail || 'Ошибка входа';
             }
+        } catch (e) {
+            console.error(e);
         }
+    });
 
-        // Запуск
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('regName').value,
+            email: document.getElementById('regEmail').value,
+            password: document.getElementById('regPassword').value
+        };
+        try {
+            const res = await fetch(`${API_URL}/users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) {
+                document.getElementById('regResult').innerText = '';
+                // После регистрации автоматически логинимся
+                document.getElementById('loginEmail').value = data.email;
+                document.getElementById('loginPassword').value = data.password;
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            } else {
+                const err = await res.json();
+                document.getElementById('regResult').innerText = err.detail || 'Ошибка регистрации';
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+
+    async function logout() {
+        if (accessToken) {
+            try {
+                await fetch(`${API_URL}/authorization/logout`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+            } catch (e) {}
+        }
+        accessToken = null;
+        currentUserId = null;
+        currentUserData = null;
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('userId');
         init();
-    </script>
+    }
+
+    // ----- ПОСТЫ -----
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const postId = document.getElementById('editPostId').value;
+        const data = {
+            title: document.getElementById('postTitle').value,
+            text: document.getElementById('postText').value
+        };
+        const url = postId ? `${API_URL}/posts?id=${postId}` : `${API_URL}/posts`;
+        const method = postId ? 'PUT' : 'POST';
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) {
+                cancelEdit();
+                loadPosts('all');
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+
+    function cancelEdit() {
+        document.getElementById('postTitle').value = '';
+        document.getElementById('postText').value = '';
+        document.getElementById('editPostId').value = '';
+        document.getElementById('cancelEditBtn').classList.add('hidden');
+        document.querySelector('#postForm button[type=submit]').innerText = 'Опубликовать';
+    }
+
+    async function loadPosts(type) {
+        const container = document.getElementById('postsContainer');
+        container.innerHTML = '<p class="text-gray-500">Загрузка...</p>';
+        let url = `${API_URL}/posts?size=50&page=1`;
+        if (type === 'recom') {
+            url = `${API_URL}/posts/recommendations?limit=20&sub_limit=10`;
+        }
+        try {
+            const res = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            if (res.status === 404) {
+                container.innerHTML = '<p class="text-gray-500">Постов нет.</p>';
+                return;
+            }
+            const data = await res.json();
+            renderPosts(data.posts || []);
+        } catch (e) {
+            container.innerHTML = '<p class="text-red-500">Ошибка загрузки.</p>';
+        }
+    }
+
+    function renderPosts(posts) {
+        const container = document.getElementById('postsContainer');
+        container.innerHTML = '';
+        if (!posts.length) {
+            container.innerHTML = '<p class="text-gray-500">Постов нет.</p>';
+            return;
+        }
+        posts.forEach(post => {
+            const isAuthor = post.author_id == currentUserId;
+            const up = post.rating_up?.length || 0;
+            const down = post.rating_down?.length || 0;
+            const liked = post.rating_up?.includes(Number(currentUserId));
+            const disliked = post.rating_down?.includes(Number(currentUserId));
+
+            const div = document.createElement('div');
+            div.className = 'bg-white p-5 rounded-lg shadow';
+            div.innerHTML = `
+                <div class="flex justify-between">
+                    <h3 class="font-bold text-xl">${escapeHtml(post.title)}</h3>
+                    <div class="space-x-2">
+                        ${isAuthor ? `
+                            <button onclick="editPost(${post.id}, '${escapeHtml(post.title)}', '${escapeHtml(post.text)}')" class="text-blue-500">✏️</button>
+                            <button onclick="deletePost(${post.id})" class="text-red-500">🗑️</button>
+                        ` : `
+                            <button onclick="subscribe(${post.author_id})" class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">Подписаться</button>
+                        `}
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500">Автор ID: ${post.author_id}</p>
+                <p class="mt-2">${escapeHtml(post.text)}</p>
+                <div class="mt-4 flex items-center space-x-4 border-t pt-3">
+                    <button onclick="rate(${post.id}, 'up')" class="flex items-center space-x-1 ${liked ? 'text-green-600 font-bold' : ''}">👍 ${up}</button>
+                    <button onclick="rate(${post.id}, 'down')" class="flex items-center space-x-1 ${disliked ? 'text-red-600 font-bold' : ''}">👎 ${down}</button>
+                    ${(liked || disliked) ? `<button onclick="deleteRate(${post.id})" class="text-sm text-gray-500">Сбросить</button>` : ''}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return text;
+        return String(text).replace(/[&<>"]/g, function(c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function editPost(id, title, text) {
+        document.getElementById('postTitle').value = title;
+        document.getElementById('postText').value = text;
+        document.getElementById('editPostId').value = id;
+        document.getElementById('cancelEditBtn').classList.remove('hidden');
+        document.querySelector('#postForm button[type=submit]').innerText = 'Сохранить';
+    }
+
+    async function deletePost(id) {
+        if (!confirm('Удалить пост?')) return;
+        await fetch(`${API_URL}/posts?id=${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        loadPosts('all');
+    }
+
+    async function rate(postId, action) {
+        const endpoint = action === 'up' ? 'rate_up' : 'rate_down';
+        await fetch(`${API_URL}/posts/${endpoint}?post_id=${postId}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        loadPosts('all');
+    }
+
+    async function deleteRate(postId) {
+        await fetch(`${API_URL}/posts/delete_rate?post_id=${postId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        loadPosts('all');
+    }
+
+    async function subscribe(authorId) {
+        await fetch(`${API_URL}/users/subscription?user_id=${currentUserId}&author_id=${authorId}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        alert('Подписка оформлена');
+    }
+
+    // ----- ПРОФИЛЬ -----
+    function populateProfileForm() {
+        if (!currentUserData) return;
+        document.getElementById('profileName').value = currentUserData.name || '';
+        document.getElementById('profileEmail').value = currentUserData.email || '';
+        document.getElementById('profilePassword').value = '';
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {};
+        const name = document.getElementById('profileName').value;
+        const email = document.getElementById('profileEmail').value;
+        const password = document.getElementById('profilePassword').value;
+        if (name !== currentUserData.name) data.name = name;
+        if (email !== currentUserData.email) data.email = email;
+        if (password) data.password = password;
+        try {
+            const res = await fetch(`${API_URL}/users?id=${currentUserId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                currentUserData = result;
+                updateNav();
+                document.getElementById('profileResult').innerHTML = '<span class="text-green-600">Профиль обновлён</span>';
+                document.getElementById('profilePassword').value = '';
+            } else {
+                document.getElementById('profileResult').innerHTML = `<span class="text-red-600">${result.detail || 'Ошибка'}</span>`;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+
+    async function deleteProfile() {
+        if (!confirm('Удалить аккаунт безвозвратно?')) return;
+        await fetch(`${API_URL}/users?id=${currentUserId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        });
+        logout();
+    }
+
+    // Старт
+    init();
+</script>
 </body>
 </html>

@@ -2,7 +2,12 @@ fastapi
 pydantic
 sqlalchemy
 uvicorn
-psycopg2
+psycopg2-binary
 asyncpg
 celery[pytest]
 aio-pika
+python-dotenv
+redis
+python-jose
+python-multipart
+bcrypt

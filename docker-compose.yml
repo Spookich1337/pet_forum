@@ -3,21 +3,23 @@ services:
     image: postgres:15
     container_name: postgres
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: mydb
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    expose:
+      - 5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+  redis:
+    image: redis:7-alpine
+    container_name: redis_auth
+    expose:
+      - 6379
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
 
   app:
     build: 
@@ -28,24 +30,33 @@ services:
       - .:/app
     environment:
       - PYTHONPATH=/app
-      - DATABASE_URL=postgresql+asyncpg://admin:admin@postgres:5432/mydb
+      - DATABASE_URL=$(POSTGRES_URL)
     depends_on:
       - postgres
-      - rabbitmq
+      - redis
+      # - rabbitmq
     ports:
       - "8080:8080"
     restart: unless-stopped
 
-  worker:
-    build: 
-      context: .
-      dockerfile: docker/server.dockerfile
-    command: celery -A src.core.celery worker --loglevel=info
-    depends_on:
-      - rabbitmq
-      - app
-    environment:
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+  # worker:
+  #   build: 
+  #     context: .
+  #     dockerfile: docker/server.dockerfile
+  #   command: celery -A src.core.celery worker --loglevel=info
+  #   depends_on:
+  #     - rabbitmq
+  #     - app
+  #   environment:
+  #     - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   container_name: rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
 
 volumes:
   postgres_data:
+  redis_data:

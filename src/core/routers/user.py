@@ -4,11 +4,11 @@ from sqlalchemy import select, and_, insert
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.routers.auth.security import *
-from src.schemas.schem import UserCreate, UserResponse, UserShortResponse, UserUpdate, UserList
+from ..util.security import *
+from ...schemas.schem import UserCreate, UserResponse, UserShortResponse, UserUpdate, UserList
 
-from src.database.DBconfig import get_db
-from src.database.DBmodels import User, user_subscriptions
+from ...database.DBconfig import get_db
+from ...database.DBmodels import User, user_subscriptions
 
 
 router = APIRouter(prefix="/users", tags=["Users api"])

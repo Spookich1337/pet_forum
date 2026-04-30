@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 from redis.asyncio import Redis
 
-from src.database.Redisconfig import get_redis
+from src.database.Redisconfig import get_jwt_redis
 
 load_dotenv()
 ACCESS_SECRET_KEY = os.getenv("ACCESS_SECRET_KEY")
@@ -135,7 +135,7 @@ async def refresh_tokens(
 
 async def check_access_token(
     token:str = Depends(oauth2_scheme), 
-    db:Redis = Depends(get_redis)
+    db:Redis = Depends(get_jwt_redis)
 ):
     if await db.exists(f"blacklist_access_{token}"):
         raise HTTPException(           

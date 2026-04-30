@@ -5,10 +5,10 @@ from sqlalchemy import select, and_, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.schemas.schem import PostCreate, PostResponse, PostUpdate, PostList
-from src.database.DBconfig import get_db
-from src.database.DBmodels import Post, User
-from src.core.routers.auth.security import *
+from ...schemas.schem import PostCreate, PostResponse, PostUpdate, PostList
+from ...database.DBconfig import get_db
+from ...database.DBmodels import Post, User
+from ...core.util.security import *
 
 
 router = APIRouter(prefix="/posts", tags=["Posts api"])

@@ -5,11 +5,12 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers.auth import authorization
-from src.database.DBconfig import engine
-from src.database.DBmodels import Base
+from ..database.DBconfig import engine
+from ..database.DBmodels import Base
+from ..database.Redisconfig import broadcast
 
-from .routers import user, post
+from .routers import user, post, authorization
+from .util.sockermanger import SocketManager
 
 # from .celery import new_post_notification
 
@@ -22,7 +23,9 @@ async def init_db():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    await broadcast.connect()
     yield
+    await broadcast.disconnect()
     await engine.dispose()
 
 

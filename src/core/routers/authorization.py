@@ -4,9 +4,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.routers.auth.security import *
-from src.database.DBmodels import User
-from src.database.DBconfig import get_db
+from ..util.security import *
+from ...database.DBmodels import User
+from ...database.DBconfig import get_db
 
 
 router = APIRouter(prefix="/authorization", tags=["Authorization api"])
@@ -17,7 +17,7 @@ async def author_user(
     response:Response, 
     data:OAuth2PasswordRequestForm = Depends(), 
     db:AsyncSession = Depends(get_db), 
-    redis:Redis = Depends(get_redis)
+    redis:Redis = Depends(get_jwt_redis)
 ):
     user_query = await db.execute(
         select(User).
@@ -60,7 +60,7 @@ async def author_user(
 async def refresh_author(
     response:Response, 
     refresh_token:str = Cookie(None), 
-    redis:Redis = Depends(get_redis)
+    redis:Redis = Depends(get_jwt_redis)
 ):
     if not refresh_token:
         raise HTTPException(
@@ -86,7 +86,7 @@ async def refresh_author(
 @router.delete("/logout")
 async def log_out_token(
     token:str = Depends(oauth2_scheme), 
-    redis:Redis = Depends(get_redis)
+    redis:Redis = Depends(get_jwt_redis)
 ):
     await block_token(token, redis)
     

@@ -22,4 +22,16 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run tests
+        env:
+          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+          ACCESS_SECRET_KEY: ${{secrets.ACCESS_SECRET_KEY}}
+          REFRESH_SECRET_KEY: ${{secrets.REFRESH_SECRET_KEY}}
+          ALG: ${{secrets.ALG}}
+          ACCESS_EXP_TIME_MIN: ${{secrets.ACCESS_EXP_TIME_MIN}}
+          REFRESH_EXP_TIME_DAY: ${{secrets.REFRESH_EXP_TIME_DAY}}
+          JWT_REDIS: ${{secrets.JWT_REDIS}}
+          WEBSOCKET_REDIS: ${{secrets.WEBSOCKET_REDIS}}
+          POSTGRES_URL: postgresql+asyncpg://${{secrets.POSTGRES_USER}}:${{secrets.POSTGRES_PASSWORD}}@localhost:5432/${{secrets.POSTGRES_DB}}
         run: pytest -v

@@ -12,3 +12,5 @@ python-jose
 python-multipart
 bcrypt
 broadcaster
+pytest
+httpx
